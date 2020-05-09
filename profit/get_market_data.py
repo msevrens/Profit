@@ -8,7 +8,7 @@ Created on May 6, 2020
 
 #################### USAGE ##########################
 
-# python3 -m mind.get_market_data 
+# python3 -m profit.get_market_data 
 
 #####################################################
 
@@ -26,15 +26,23 @@ import datetime as dt
 
 import pandas
 import pandas_datareader as web
-
-start = dt.datetime(1970, 1, 1)
-end = dt.datetime(2020, 1, 1)
-
-df = web.DataReader('IBM', 'yahoo', start, end)
-print(df.head(5))
-print(df.tail(5))
+import matplotlib.pyplot as plt
 
 def success_signal():
 	"""Calculate whether investments performing better than market as a whole"""
 
 	return "probably not"
+
+def plot_stock(ticker_symbol):
+	"""Plot stock value since 1970"""
+
+	start = dt.datetime(1970, 1, 1)
+	end = dt.datetime(2020, 1, 1)
+
+	df = web.DataReader(ticker_symbol, 'yahoo', start, end)
+
+	df.plot()
+	plt.show()
+
+plot_stock('IBM')
+plot_stock('DIS')
