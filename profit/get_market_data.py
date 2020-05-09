@@ -27,6 +27,9 @@ import datetime as dt
 import pandas
 import pandas_datareader as web
 import matplotlib.pyplot as plt
+from pandas.plotting import register_matplotlib_converters
+
+register_matplotlib_converters()
 
 def success_signal():
 	"""Calculate whether investments performing better than market as a whole"""
@@ -36,14 +39,24 @@ def success_signal():
 def plot_stock(ticker_symbol, rolling=1):
 	"""Plot stock value since 1970"""
 
-	start = dt.datetime(1970, 1, 1)
+	start = dt.datetime(2010, 1, 1)
 	end = dt.datetime(2020, 1, 1)
 
+	# Load Data
 	df = web.DataReader(ticker_symbol, 'yahoo', start, end)
 
-	df['rolling'] = df['Adj Close'].rolling(window=rolling).mean()
-	df['rolling'].plot()
+	# Get Rolling Average
+	df['Rolling'] = df['Adj Close'].rolling(window=rolling, min_periods=0).mean()
+	df.dropna(inplace=True)
+
+	# Plot
+	ax1 = plt.subplot2grid((6, 1), (0, 0), rowspan=5, colspan=1)
+	ax2 = plt.subplot2grid((6, 1), (5, 0), rowspan=1, colspan=1, sharex=ax1)
+
+	ax1.plot(df.index, df['Adj Close'])
+	ax1.plot(df.index, df['Rolling'])
+	ax2.bar(df.index, df['Volume'])
+
 	plt.show()
 
-plot_stock('DIS')
 plot_stock('DIS', 100)
