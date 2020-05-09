@@ -22,6 +22,17 @@ made into an index fund. Because the number one thing I want to know is whether 
 """
 
 import sys
+import datetime as dt
+
+import pandas
+import pandas_datareader as web
+
+start = dt.datetime(1970, 1, 1)
+end = dt.datetime(2020, 1, 1)
+
+df = web.DataReader('IBM', 'yahoo', start, end)
+print(df.head(5))
+print(df.tail(5))
 
 def success_signal():
 	"""Calculate whether investments performing better than market as a whole"""
