@@ -33,7 +33,7 @@ def success_signal():
 
 	return "probably not"
 
-def plot_stock(ticker_symbol):
+def plot_stock(ticker_symbol, rolling=1):
 	"""Plot stock value since 1970"""
 
 	start = dt.datetime(1970, 1, 1)
@@ -41,8 +41,9 @@ def plot_stock(ticker_symbol):
 
 	df = web.DataReader(ticker_symbol, 'yahoo', start, end)
 
-	df.plot()
+	df['rolling'] = df['Adj Close'].rolling(window=rolling).mean()
+	df['rolling'].plot()
 	plt.show()
 
-plot_stock('IBM')
 plot_stock('DIS')
+plot_stock('DIS', 100)
