@@ -22,11 +22,13 @@ made into an index fund. Because the number one thing I want to know is whether 
 """
 
 import sys
+import requests
 import datetime as dt
 
 import pandas
 import pandas_datareader as web
 import matplotlib.pyplot as plt
+import bs4 as bs
 from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
@@ -39,7 +41,7 @@ def success_signal():
 def plot_stock(ticker_symbol, rolling=1):
 	"""Plot stock value since 1970"""
 
-	start = dt.datetime(2010, 1, 1)
+	start = dt.datetime(1958, 1, 1)
 	end = dt.datetime(2020, 1, 1)
 
 	# Load Data
@@ -59,4 +61,20 @@ def plot_stock(ticker_symbol, rolling=1):
 
 	plt.show()
 
-plot_stock('DIS', 100)
+def get_sp_tickers():
+	"""Scrape S&P 500 ticker symbols from wikipedia"""
+
+	resp = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+	soup = bs.BeautifulSoup(resp.text, 'lxml')
+	table = soup.find('table', {'class': 'wikitable sortable'})
+	tickers = []
+
+	for row in table.findAll('tr')[1:]:
+		ticker = row.findAll('td')[0].text
+		tickers.append(ticker.rstrip("\n"))
+
+	with open('data/S&P 500.txt', 'w') as filehandle:
+		filehandle.writelines("%s\n" % ticker for ticker in tickers)
+
+get_sp_tickers()
+# plot_stock('DIS', 100)
