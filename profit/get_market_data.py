@@ -21,6 +21,7 @@ made into an index fund. Because the number one thing I want to know is whether 
 
 """
 
+import os
 import sys
 import requests
 import datetime as dt
@@ -64,6 +65,11 @@ def plot_stock(ticker_symbol, rolling=1):
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
 
+	if os.path.isfile('data/S&P 500.txt'):
+		with open('data/S&P 500.txt', 'r') as filehandle:
+		 	tickers = [ticker.rstrip() for ticker in filehandle.readlines()]
+		 	return tickers
+
 	resp = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
 	soup = bs.BeautifulSoup(resp.text, 'lxml')
 	table = soup.find('table', {'class': 'wikitable sortable'})
@@ -76,5 +82,7 @@ def get_sp_tickers():
 	with open('data/S&P 500.txt', 'w') as filehandle:
 		filehandle.writelines("%s\n" % ticker for ticker in tickers)
 
-get_sp_tickers()
+	return tickers
+
+print(get_sp_tickers())
 # plot_stock('DIS', 100)
