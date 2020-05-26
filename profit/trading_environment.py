@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
 
-"""This module fetches market data
+"""This module creates a simulated environment or market to trade within
 
 Created on May 25, 2020
 @author: Matthew Sevrens
@@ -21,7 +21,15 @@ import numpy as np
 import gym
 from gym import spaces
 
-class StockTradingEnvironment(gym.Env):
+MAX_ACCOUNT_BALANCE = pow(2, 31) - 1
+MAX_NUM_SHARES = pow(2, 31) - 1
+MAX_SHARE_PRICE = 5000
+MAX_OPEN_POSITIONS = 5
+MAX_STEPS = 20000
+
+INITIAL_ACCOUNT_BALANCE = 10000
+
+class StockTradingEnv(gym.Env):
 	"""A stock trading environment for OpenAI gym"""
 
 	metadata = {'render.modes': ['human']}
