@@ -132,8 +132,8 @@ class StockTradingEnv(gym.Env):
 			self.shares_held += shares_bought
 
 		# Sell amount % of shares held
-	  	elif actionType < 2:
-			shares_sold = self.shares_held * amount . 
+		elif actionType < 2:
+			shares_sold = int(self.shares_held * amount)
 			self.balance += shares_sold * current_price
 			self.shares_held -= shares_sold
 			self.total_shares_sold += shares_sold

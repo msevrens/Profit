@@ -27,7 +27,7 @@ from stable_baselines.common.policies import MlpPolicy
 from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines import PPO2
 
-from profit.training_environment import StockTradingEnv
+from profit.trading_environment import StockTradingEnv
 
 df = pd.read_csv('data/AAPL.csv')
 df = df.sort_values('Date')
