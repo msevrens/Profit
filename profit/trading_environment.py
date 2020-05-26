@@ -16,6 +16,9 @@ Created on May 25, 2020
 
 #####################################################
 
+import random
+import json
+
 import pandas as pd
 import numpy as np
 import gym
@@ -102,8 +105,8 @@ class StockTradingEnv(gym.Env):
 
 		if self.current_step > len(self.df.loc[:, 'Open'].values) - 6:
 			self.current_step = 0
-			delay_modifier = (self.current_step / MAX_STEPS)
-	
+		
+		delay_modifier = (self.current_step / MAX_STEPS)
 		reward = self.balance * delay_modifier
 		done = self.net_worth <= 0
 		obs = self._next_observation()
@@ -132,7 +135,7 @@ class StockTradingEnv(gym.Env):
 			self.shares_held += shares_bought
 
 		# Sell amount % of shares held
-		elif actionType < 2:
+		elif action_type < 2:
 			shares_sold = int(self.shares_held * amount)
 			self.balance += shares_sold * current_price
 			self.shares_held -= shares_sold
