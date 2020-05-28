@@ -31,12 +31,12 @@ def run(train):
     for date in np.unique(time_frame.datadate):
         daily_data.append(time_frame[time_frame.datadate == date])
 
-class StockEnv(gym.Env):
+class MultiStockEnv(gym.Env):
     """A multi-stock trading environment for OpenAI gym"""
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, day=0, money=10, scope=1, train=True):
+    def __init__(self, day=0, train=True):
 
         run(train)
 
@@ -76,7 +76,7 @@ class StockEnv(gym.Env):
             plt.plot(self.asset_memory,'r')
             plt.savefig('models/iteration_{}.png'.format(iteration))
             plt.close()
-            print("total_reward:{}".format(self.state[0]+ sum(np.array(self.state[1:29])*np.array(self.state[29:]))- 10000 ))
+            print("total_reward:{}".format(self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:])) - 10000))
             
             return self.state, self.reward, self.terminal, {}
 
@@ -118,6 +118,17 @@ class StockEnv(gym.Env):
         return self.state
     
     def render(self, mode='human'):
+
+        cash = self.state[0]
+        stock_values = sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
+
+        print("mode: " + mode)
+        print("Cash Values: " + str(cash))
+        print("Stock Values: " + str(stock_values))
+        print("Total Assets: " + str(cash + stock_values))
+        print("total_reward: {}".format(cash + stock_values - 10000))
+        print("")
+
         return self.state
 
     def _seed(self, seed=None):

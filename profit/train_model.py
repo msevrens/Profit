@@ -28,17 +28,21 @@ from stable_baselines.common.vec_env import DummyVecEnv
 from stable_baselines import PPO2
 
 from profit.trading_environment import StockTradingEnv
+from profit.multi_stock_env import MultiStockEnv
 
 df = pd.read_csv('data/AAPL.csv')
 df = df.sort_values('Date')
 
 # Vectorize Environment
-env = DummyVecEnv([lambda: StockTradingEnv(df)])
-model = PPO2(MlpPolicy, env, verbose=1)
+oneStockEnv = DummyVecEnv([lambda: StockTradingEnv(df)])
+trainEnv = DummyVecEnv([lambda: MultiStockEnv()])
+model = PPO2(MlpPolicy, trainEnv, verbose=1)
 model.learn(total_timesteps=20000)
-obs = env.reset()
+obs = trainEnv.reset()
+
+testEnv = DummyVecEnv([lambda: MultiStockEnv(train=False)])
 
 for i in range(2000):
 	action, _states = model.predict(obs)
-	obs, rewards, done, info = env.step(action)
-	env.render()
+	obs, rewards, done, info = testEnv.step(action)
+	testEnv.render(mode="test")
