@@ -121,12 +121,13 @@ class MultiStockEnv(gym.Env):
 
         cash = self.state[0]
         stock_values = sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
+        total_reward = cash + stock_values - 10000
 
         print("mode: " + mode)
-        print("Cash Values: " + str(cash))
-        print("Stock Values: " + str(stock_values))
-        print("Total Assets: " + str(cash + stock_values))
-        print("total_reward: {}".format(cash + stock_values - 10000))
+        print("Cash Values: " + '%.2f'%(cash))
+        print("Stock Values: " + '%.2f'%(stock_values))
+        print("Total Assets: " + '%.2f'%(cash + stock_values))
+        print("total_reward: {}".format('%.2f'%(total_reward)))
         print("")
 
         return self.state
