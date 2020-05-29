@@ -43,6 +43,7 @@ obs = trainEnv.reset()
 testEnv = DummyVecEnv([lambda: MultiStockEnv(train=False)])
 
 for i in range(686):
+	print("Step: " + str(i))
 	action, _states = model.predict(obs)
 	obs, rewards, done, info = testEnv.step(action)
 	testEnv.render(mode="test")
