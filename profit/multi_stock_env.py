@@ -106,7 +106,7 @@ class MultiStockEnv(gym.Env):
         print("total_reward: {}".format('%.2f'%(total_reward)))
         print("")
 
-        return self.state
+        return total_reward
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

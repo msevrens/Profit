@@ -30,9 +30,6 @@ from stable_baselines import PPO2
 
 from profit.multi_stock_env import MultiStockEnv
 
-df = pd.read_csv('data/AAPL.csv')
-df = df.sort_values('Date')
-
 def load_data(train):
     """Run module"""
 
@@ -74,8 +71,19 @@ obs = trainEnv.reset()
 
 testEnv = DummyVecEnv([lambda: MultiStockEnv(test_data, train=False)])
 
-for i in range(len(test_data) - 1):
-	print("Step: " + str(i))
-	action, _states = model.predict(obs)
-	obs, rewards, done, info = testEnv.step(action)
-	testEnv.render(mode="test")
+results = []
+
+for ii in range(10):
+    for i in range(len(test_data) - 1):
+        # print("Step: " + str(i))
+        action, _states = model.predict(obs)
+        obs, rewards, done, info = testEnv.step(action)
+        # testEnv.render(mode="test")
+    print(ii)
+    total_reward = testEnv.render(mode="test")
+    results.append(total_reward)
+    obs = testEnv.reset()
+
+print(results)
+print("\nAverage Reward: " + str(sum(results) / len(results)))
+
