@@ -6,40 +6,16 @@ from gym import spaces
 
 import matplotlib.pyplot as plt
 
-daily_data = []
 iteration = 0
-
-def run(train):
-    """Run module"""
-
-    data_1 = pd.read_csv('data/dow_jones_30_daily_price.csv')
-
-    equal_4711_list = list(data_1.tic.value_counts() == 4711)
-    names = data_1.tic.value_counts().index
-
-    select_stocks_list = list(names[equal_4711_list]) + ['NKE','KO']
-
-    data_2 = data_1[data_1.tic.isin(select_stocks_list)][~data_1.datadate.isin(['20010912', '20010913'])]
-    data_3 = data_2[['iid', 'datadate', 'tic', 'prccd', 'ajexdi']]
-    data_3['adjcp'] = data_3['prccd'] / data_3['ajexdi']
-
-    if train:
-        time_frame = data_3[(data_3.datadate > 20090000) & (data_3.datadate < 20160000)]
-    else:
-        time_frame = data_3[data_3.datadate > 20160000]
-
-    for date in np.unique(time_frame.datadate):
-        daily_data.append(time_frame[time_frame.datadate == date])
 
 class MultiStockEnv(gym.Env):
     """A multi-stock trading environment for OpenAI gym"""
 
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, day=0, train=True):
+    def __init__(self, data, day=0, train=True):
 
-        run(train)
-
+        self.daily_data = data
         self.day = day
         
         # Action Space: Buy or Sell Maximum 5 Shares
@@ -48,7 +24,7 @@ class MultiStockEnv(gym.Env):
         # Observation Space: [money] + [prices 1-28] * [owned shares 1-28]
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(57,))
         
-        self.data = daily_data[self.day]
+        self.data = self.daily_data[self.day]
         self.terminal = False
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         self.reward = 0
@@ -70,7 +46,7 @@ class MultiStockEnv(gym.Env):
         self.state[index+29] += min(available_amount, action)
         
     def step(self, actions):
-        self.terminal = self.day >= 1761
+        self.terminal = self.day >= len(self.daily_data) - 1
 
         if self.terminal:
             plt.plot(self.asset_memory,'r')
@@ -95,7 +71,7 @@ class MultiStockEnv(gym.Env):
                 self._buy_stock(index, actions[index])
 
             self.day += 1
-            self.data = daily_data[self.day]         
+            self.data = self.daily_data[self.day]
 
             # print("stock_shares:{}".format(self.state[29:]))
             self.state =  [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
@@ -112,7 +88,7 @@ class MultiStockEnv(gym.Env):
     def reset(self):
         self.asset_memory = [10000]
         self.day = 0
-        self.data = daily_data[self.day]
+        self.data = self.daily_data[self.day]
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         
         return self.state
