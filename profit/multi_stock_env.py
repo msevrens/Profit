@@ -1,3 +1,22 @@
+#!/usr/local/bin/python3
+
+"""This module creates an OpenAI Gym environment for trading multiple stocks
+
+Created on May 28, 2020
+@author: Matthew Sevrens
+"""
+
+# https://towardsdatascience.com/creating-a-custom-openai-gym-environment-for-stock-trading-be532be3910e
+# https://github.com/bioothod/gym-stocks
+# https://github.com/notadamking/Stock-Trading-Environment
+
+#################### USAGE ##########################
+
+# from profit.multi_stock_env import MultiStockEnv
+# env = MultiStockEnv(data)
+
+#####################################################
+
 import numpy as np
 import pandas as pd
 from gym.utils import seeding
