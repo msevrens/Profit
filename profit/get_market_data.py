@@ -70,17 +70,26 @@ def get_dow():
 	# Sources
 	wsj = pd.read_csv('data/WSJ-Dow-HistoricalPrices-70-20.csv')
 	mt = pd.read_csv('data/dow-jones-industrial-average-daily.csv')
-	yahoo = yf.Ticker("DJI")
+	yahoo = pd.read_csv('data/yahoo-DJI.csv')
+
+	# Remove Adj Close
+	yahoo.drop('Adj Close', axis=1, inplace=True)
+
+	# yahoo = yf.Ticker("DJI")
 
 	# Match Date Formats and Merge
 	wsj['Date'] = wsj['Date'].apply(lambda x: parse(x).strftime("%Y-%m-%d"))
 	merged = pd.merge(mt, wsj, on="Date", how="outer")
+	three = pd.merge(merged, yahoo, on="Date", how="outer")
 
 	# Compare
+	match_map = (three['Closing Value'] == three[' Close']) & (three['Closing Value'] == round(three['Close'], 2))
 
 	# Merge 
 
 	# Save
+
+	return merged
 
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
