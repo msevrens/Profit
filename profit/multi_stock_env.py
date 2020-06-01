@@ -54,14 +54,14 @@ class MultiStockEnv(gym.Env):
 
     def _sell_stock(self, index, action):
         if self.state[index+29] > 0:
-            self.state[0] += self.state[index+1]*min(abs(action), self.state[index+29])
+            self.state[0] += self.state[index+1] * min(abs(action), self.state[index+29])
             self.state[index+29] -= min(abs(action), self.state[index+29])
         else:
             pass
     
     def _buy_stock(self, index, action):
         available_amount = self.state[0] // self.state[index+1]
-        self.state[0] -= self.state[index+1]*min(available_amount, action)
+        self.state[0] -= self.state[index+1] * min(available_amount, action)
         self.state[index+29] += min(available_amount, action)
         
     def step(self, actions):
@@ -76,7 +76,7 @@ class MultiStockEnv(gym.Env):
             return self.state, self.reward, self.terminal, {}
 
         else:
-            begin_total_asset = self.state[0]+ sum(np.array(self.state[1:29])*np.array(self.state[29:]))
+            begin_total_asset = self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
             argsort_actions = np.argsort(actions)
             sell_index = argsort_actions[:np.where(actions < 0)[0].shape[0]]
             buy_index = argsort_actions[::-1][:np.where(actions > 0)[0].shape[0]]
