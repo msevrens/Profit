@@ -27,7 +27,7 @@ import requests
 import datetime as dt
 from dateutil.parser import parse
 
-import pandas
+import pandas as pd
 import pandas_datareader as web
 import matplotlib.pyplot as plt
 import yfinance as yf
@@ -65,15 +65,16 @@ def plot_stock(ticker_symbol, rolling=1):
 	plt.show()
 
 def get_dow():
-	"""Download historical Dow Jones data"""
+	"""Merge multiple historical Dow Jones sources"""
 
 	# Sources
 	wsj = pd.read_csv('data/WSJ-Dow-HistoricalPrices-70-20.csv')
 	mt = pd.read_csv('data/dow-jones-industrial-average-daily.csv')
 	yahoo = yf.Ticker("DJI")
 
-	# Match Date Formats
-	wsj['Date'] = wsj['Date'].apply(lambda x: parse(x).date())
+	# Match Date Formats and Merge
+	wsj['Date'] = wsj['Date'].apply(lambda x: parse(x).strftime("%Y-%m-%d"))
+	merged = pd.merge(mt, wsj, on="Date", how="outer")
 
 	# Compare
 
