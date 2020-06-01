@@ -25,6 +25,7 @@ import os
 import sys
 import requests
 import datetime as dt
+from dateutil.parser import parse
 
 import pandas
 import pandas_datareader as web
@@ -66,7 +67,19 @@ def plot_stock(ticker_symbol, rolling=1):
 def get_dow():
 	"""Download historical Dow Jones data"""
 
-	dji = yf.Ticker("DJI")
+	# Sources
+	wsj = pd.read_csv('data/WSJ-Dow-HistoricalPrices-70-20.csv')
+	mt = pd.read_csv('data/dow-jones-industrial-average-daily.csv')
+	yahoo = yf.Ticker("DJI")
+
+	# Match Date Formats
+	wsj['Date'] = wsj['Date'].apply(lambda x: parse(x).date())
+
+	# Compare
+
+	# Merge 
+
+	# Save
 
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
@@ -90,5 +103,4 @@ def get_sp_tickers():
 
 	return tickers
 
-print(get_sp_tickers())
-# plot_stock('DIS', 100)
+get_dow()
