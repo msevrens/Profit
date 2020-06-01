@@ -29,6 +29,7 @@ import datetime as dt
 import pandas
 import pandas_datareader as web
 import matplotlib.pyplot as plt
+import yfinance as yf
 import bs4 as bs
 from pandas.plotting import register_matplotlib_converters
 
@@ -61,6 +62,11 @@ def plot_stock(ticker_symbol, rolling=1):
 	ax2.bar(df.index, df['Volume'])
 
 	plt.show()
+
+def get_dow():
+	"""Download historical Dow Jones data"""
+
+	dji = yf.Ticker("DJI")
 
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
