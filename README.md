@@ -1,5 +1,6 @@
 ## Prerequisites 
 Python 3.7.3  
+
 bs4==0.0.1  
 pandas==0.25.1  
 pandas-datareader==0.8.1  
