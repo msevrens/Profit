@@ -17,6 +17,9 @@ Created on May 28, 2020
 
 #####################################################
 
+import sys
+from dateutil.parser import parse
+
 import numpy as np
 import pandas as pd
 from gym.utils import seeding
@@ -24,6 +27,8 @@ import gym
 from gym import spaces
 
 import matplotlib.pyplot as plt
+
+from profit.get_market_data import get_dow
 
 iteration = 0
 
@@ -34,6 +39,9 @@ class MultiStockEnv(gym.Env):
 
     def __init__(self, data, day=0, train=True):
 
+        self.dow_hist = pd.read_csv('data/aggregated_dow_1914-2020.csv')
+        self.dow_hist.set_index('Date', inplace=True)
+        self.daily_return = self.dow_hist['Close'].pct_change(1)[1:]
         self.daily_data = data
         self.day = day
         
@@ -44,11 +52,12 @@ class MultiStockEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(57,))
         
         self.data = self.daily_data[self.day]
-        self.date = self.daily_data[0].datadate.iloc[0]
+        self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
         self.terminal = False
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         self.reward = 0
         self.asset_memory = [10000]
+        self.dow_memory = [10000]
 
         self.reset()
         self._seed()
@@ -92,7 +101,7 @@ class MultiStockEnv(gym.Env):
 
             self.day += 1
             self.data = self.daily_data[self.day]
-            self.date = self.daily_data[0].datadate.iloc[0]
+            self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
 
             # print("stock_shares:{}".format(self.state[29:]))
             self.state =  [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
@@ -102,15 +111,19 @@ class MultiStockEnv(gym.Env):
             self.reward = end_total_asset - begin_total_asset            
             # print("step_reward:{}".format(self.reward))
 
+            # Save Progress
+            dow_growth = (self.dow_memory[-1] * self.daily_return.loc[self.date]) + self.dow_memory[-1]
+            self.dow_memory.append(dow_growth)
             self.asset_memory.append(end_total_asset)
 
         return self.state, self.reward, self.terminal, {}
 
     def reset(self):
         self.asset_memory = [10000]
+        self.dow_memory = [10000]
         self.day = 0
         self.data = self.daily_data[self.day]
-        self.date = self.daily_data[0].datadate.iloc[0]
+        self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         
         return self.state
@@ -125,6 +138,7 @@ class MultiStockEnv(gym.Env):
         print("Cash Values: " + '%.2f'%(cash))
         print("Stock Values: " + '%.2f'%(stock_values))
         print("Total Assets: " + '%.2f'%(cash + stock_values))
+        print("Dow Growth: " + '%.2f'%(self.dow_memory[self.day]))
         print("total_reward: {}".format('%.2f'%(total_reward)))
         print("")
 
