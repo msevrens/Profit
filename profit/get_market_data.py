@@ -23,6 +23,7 @@ made into an index fund. Because the number one thing I want to know is whether 
 
 import os
 import sys
+import math
 import requests
 import datetime as dt
 from dateutil.parser import parse
@@ -67,6 +68,10 @@ def plot_stock(ticker_symbol, rolling=1):
 def get_dow():
 	"""Merge multiple historical Dow Jones sources"""
 
+	# Return Cached if Available
+	if os.path.isfile("data/aggregated_dow_1914-2020.csv"):
+		return pd.read_csv("data/aggregated_dow_1914-2020.csv")
+
 	# Sources
 	wsj = pd.read_csv('data/WSJ-Dow-HistoricalPrices-70-20.csv')
 	mt = pd.read_csv('data/dow-jones-industrial-average-daily.csv')
@@ -81,15 +86,25 @@ def get_dow():
 	wsj['Date'] = wsj['Date'].apply(lambda x: parse(x).strftime("%Y-%m-%d"))
 	merged = pd.merge(mt, wsj, on="Date", how="outer")
 	three = pd.merge(merged, yahoo, on="Date", how="outer")
+	three.rename({'Close': 'Yahoo Close', 'Closing Value': 'MT Close', ' Close': 'WSJ Close'}, axis=1, inplace=True)
 
-	# Compare
-	match_map = (three['Closing Value'] == three[' Close']) & (three['Closing Value'] == round(three['Close'], 2))
+	# Select Close Price from Sources
+	match_map = (three['MT Close'] == three['WSJ Close']) & (three['MT Close'] == round(three['Yahoo Close'], 2))
 
-	# Merge 
+	def merge_close(x):
+		if not math.isnan(x['Yahoo Close']):
+			return x['Yahoo Close']
+		elif not math.isnan(x['WSJ Close']):
+			return x['WSJ Close']
+		else:
+			return x['MT Close']
+
+	three['Close'] = three.apply(merge_close, axis=1)
 
 	# Save
+	three.to_csv("data/aggregated_dow_1914-2020.csv")
 
-	return merged
+	return three
 
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
