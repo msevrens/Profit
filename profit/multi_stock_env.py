@@ -133,12 +133,15 @@ class MultiStockEnv(gym.Env):
         cash = self.state[0]
         stock_values = sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
         total_reward = cash + stock_values - 10000
+        dow_portfolio_value = self.dow_memory[self.day]
+        dow_reward = dow_portfolio_value - 10000
 
         print("mode: " + mode)
         print("Cash Values: " + '%.2f'%(cash))
         print("Stock Values: " + '%.2f'%(stock_values))
         print("Total Assets: " + '%.2f'%(cash + stock_values))
-        print("Dow Growth: " + '%.2f'%(self.dow_memory[self.day]))
+        print("Dow Portfolio Value: " + '%.2f'%(dow_portfolio_value))
+        print("dow_reward: " + '%.2f'%(dow_reward))
         print("total_reward: {}".format('%.2f'%(total_reward)))
         print("")
 
