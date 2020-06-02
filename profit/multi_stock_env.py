@@ -39,6 +39,7 @@ class MultiStockEnv(gym.Env):
 
     def __init__(self, data, day=0, train=True):
 
+        self.mode = train
         self.dow_hist = pd.read_csv('data/aggregated_dow_1914-2020.csv')
         self.dow_hist.set_index('Date', inplace=True)
         self.daily_return = self.dow_hist['Close'].pct_change(1)[1:]
@@ -75,14 +76,10 @@ class MultiStockEnv(gym.Env):
         self.state[index+29] += min(available_amount, action)
         
     def step(self, actions):
+
         self.terminal = self.day >= len(self.daily_data) - 1
 
         if self.terminal:
-            plt.plot(self.asset_memory,'r')
-            plt.savefig('models/iteration_{}.png'.format(iteration))
-            plt.close()
-            print("total_reward:{}".format(self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:])) - 10000))
-            
             return self.state, self.reward, self.terminal, {}
 
         else:
@@ -119,6 +116,16 @@ class MultiStockEnv(gym.Env):
         return self.state, self.reward, self.terminal, {}
 
     def reset(self):
+
+        # Render Stats to Chart
+        print("total_reward:{}".format(self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:])) - 10000))
+
+        plt.plot(self.asset_memory,'b', linewidth=0.25)
+        plt.plot(self.dow_memory,'k', linewidth=0.25)
+        plt.savefig('models/iteration_{}.png'.format(iteration))
+        plt.close()
+
+        # Reset Environment
         self.asset_memory = [10000]
         self.dow_memory = [10000]
         self.day = 0
