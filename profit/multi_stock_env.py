@@ -44,6 +44,7 @@ class MultiStockEnv(gym.Env):
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(57,))
         
         self.data = self.daily_data[self.day]
+        self.date = self.daily_data[0].datadate.iloc[0]
         self.terminal = False
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         self.reward = 0
@@ -91,6 +92,7 @@ class MultiStockEnv(gym.Env):
 
             self.day += 1
             self.data = self.daily_data[self.day]
+            self.date = self.daily_data[0].datadate.iloc[0]
 
             # print("stock_shares:{}".format(self.state[29:]))
             self.state =  [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
@@ -108,6 +110,7 @@ class MultiStockEnv(gym.Env):
         self.asset_memory = [10000]
         self.day = 0
         self.data = self.daily_data[self.day]
+        self.date = self.daily_data[0].datadate.iloc[0]
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         
         return self.state
