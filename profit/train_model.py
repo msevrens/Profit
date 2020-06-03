@@ -47,9 +47,9 @@ def load_data(train):
     data_3['adjcp'] = data_3['prccd'] / data_3['ajexdi']
 
     if train:
-        time_frame = data_3[(data_3.datadate > 20090000) & (data_3.datadate < 20160000)]
+        time_frame = data_3[(data_3.datadate > 20000000) & (data_3.datadate < 20160000)]
     else:
-        time_frame = data_3[data_3.datadate > 20160000]
+        time_frame = data_3[(data_3.datadate > 20160000)]
 
     for date in np.unique(time_frame.datadate):
         daily_data.append(time_frame[time_frame.datadate == date])
@@ -66,7 +66,7 @@ print("Number of days in test data: " + str(len(test_data)))
 # Vectorize Environment
 trainEnv = DummyVecEnv([lambda: MultiStockEnv(train_data)])
 model = PPO2(MlpPolicy, trainEnv, verbose=1)
-model.learn(total_timesteps=20000)
+model.learn(total_timesteps=25000)
 obs = trainEnv.reset()
 
 testEnv = DummyVecEnv([lambda: MultiStockEnv(test_data, train=False)])
@@ -79,11 +79,10 @@ for ii in range(10):
         action, _states = model.predict(obs)
         obs, rewards, done, info = testEnv.step(action)
         # testEnv.render(mode="test")
-    print(ii)
-    total_reward = testEnv.render(mode="test")
+    print("Test run #" + str(ii))
+    total_reward = testEnv.render(mode="test", suffix=ii)
     results.append(total_reward)
     obs = testEnv.reset()
 
 print(results)
 print("\nAverage Reward: " + str(sum(results) / len(results)))
-

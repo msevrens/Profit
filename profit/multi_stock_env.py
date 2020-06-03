@@ -27,10 +27,9 @@ import gym
 from gym import spaces
 
 import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
 
 from profit.get_market_data import get_dow
-
-iteration = 0
 
 class MultiStockEnv(gym.Env):
     """A multi-stock trading environment for OpenAI gym"""
@@ -59,6 +58,9 @@ class MultiStockEnv(gym.Env):
         self.reward = 0
         self.asset_memory = [10000]
         self.dow_memory = [10000]
+        self.cash_memory = [10000]
+        self.date_memory = [parse(str(self.data.datadate.iloc[0]))]
+        self.file_suffix = "0"
 
         self.reset()
         self._seed()
@@ -99,6 +101,7 @@ class MultiStockEnv(gym.Env):
             self.day += 1
             self.data = self.daily_data[self.day]
             self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
+            self.date_memory.append(parse(str(self.data.datadate.iloc[0])))
 
             # print("stock_shares:{}".format(self.state[29:]))
             self.state =  [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
@@ -112,44 +115,56 @@ class MultiStockEnv(gym.Env):
             dow_growth = (self.dow_memory[-1] * self.daily_return.loc[self.date]) + self.dow_memory[-1]
             self.dow_memory.append(dow_growth)
             self.asset_memory.append(end_total_asset)
+            self.cash_memory.append(self.state[0])
 
         return self.state, self.reward, self.terminal, {}
 
     def reset(self):
 
         # Render Stats to Chart
-        print("total_reward:{}".format(self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:])) - 10000))
+        formatter = DateFormatter('%b %Y')
+        fig, ax = plt.subplots()
+        plt.plot_date(self.date_memory, self.asset_memory, 'b', linewidth=0.25)
+        plt.plot_date(self.date_memory, self.dow_memory, 'k', linewidth=0.25)
 
-        plt.plot(self.asset_memory,'b', linewidth=0.25)
-        plt.plot(self.dow_memory,'k', linewidth=0.25)
-        plt.savefig('models/iteration_{}.png'.format(iteration))
+        ax.xaxis.set_major_formatter(formatter)
+        ax.xaxis.set_tick_params(rotation=30, labelsize=9)
+        plt.ylabel('Portfolio Value')
+        plt.savefig('models/iteration_{}.png'.format(self.file_suffix))
+        plt.close()
+
+        plt.plot(self.cash_memory,'g', linewidth=0.25)
+        plt.savefig('models/cash.png')
         plt.close()
 
         # Reset Environment
         self.asset_memory = [10000]
         self.dow_memory = [10000]
+        self.cash_memory = [10000]
         self.day = 0
         self.data = self.daily_data[self.day]
         self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
+        self.date_memory = [parse(str(self.data.datadate.iloc[0]))]
+
         self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
         
         return self.state
     
-    def render(self, mode='human'):
+    def render(self, mode='human', suffix="0"):
 
+        self.file_suffix = suffix
         cash = self.state[0]
         stock_values = sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
         total_reward = cash + stock_values - 10000
         dow_portfolio_value = self.dow_memory[self.day]
         dow_reward = dow_portfolio_value - 10000
 
-        print("mode: " + mode)
         print("Cash Values: " + '%.2f'%(cash))
         print("Stock Values: " + '%.2f'%(stock_values))
         print("Total Assets: " + '%.2f'%(cash + stock_values))
         print("Dow Portfolio Value: " + '%.2f'%(dow_portfolio_value))
         print("dow_reward: " + '%.2f'%(dow_reward))
-        print("total_reward: {}".format('%.2f'%(total_reward)))
+        print("agent_reward: {}".format('%.2f'%(total_reward)))
         print("")
 
         return total_reward
