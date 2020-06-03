@@ -124,11 +124,12 @@ class MultiStockEnv(gym.Env):
         # Render Stats to Chart
         formatter = DateFormatter('%b %Y')
         fig, ax = plt.subplots()
-        plt.plot_date(self.date_memory, self.asset_memory, 'b', linewidth=0.25)
-        plt.plot_date(self.date_memory, self.dow_memory, 'k', linewidth=0.25)
+        plt.plot_date(self.date_memory, self.asset_memory, 'b', linewidth=0.25, label="PPO")
+        plt.plot_date(self.date_memory, self.dow_memory, 'k', linewidth=0.25, label="DJIA")
+        plt.legend()
 
         ax.xaxis.set_major_formatter(formatter)
-        ax.xaxis.set_tick_params(rotation=30, labelsize=9)
+        ax.xaxis.set_tick_params(labelsize=7, labelrotation=25)
         plt.ylabel('Portfolio Value')
         plt.savefig('models/iteration_{}.png'.format(self.file_suffix))
         plt.close()
