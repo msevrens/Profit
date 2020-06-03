@@ -12,15 +12,6 @@ Created on May 6, 2020
 
 #####################################################
 
-"""
-
-I want to know, if at each investment decision, instead of having made the decision I did, rather I invested in an index fund, the same amount, what would I have made
-
-I think I could pull all my transactions made, when I purchased them, how much, what stock and then use those values to simulate each transaction having been 
-made into an index fund. Because the number one thing I want to know is whether my efforts are actually contributing to doing better
-
-"""
-
 import os
 import sys
 import math
@@ -28,6 +19,7 @@ import requests
 import datetime as dt
 from dateutil.parser import parse
 
+import numpy as np
 import pandas as pd
 import pandas_datareader as web
 import matplotlib.pyplot as plt
@@ -106,6 +98,42 @@ def get_dow():
 
 	return three
 
+def get_historical_prices(tickers):
+	"""Construct and save historical prices of list of stock tickers"""
+
+	baseline_data = pd.read_csv('data/dow_jones_30_daily_price.csv')
+	equal_timeframe_list = list(baseline_data.tic.value_counts() >= 4711)
+	names = baseline_data.tic.value_counts().index
+	select_stocks_list = list(names[equal_timeframe_list])
+
+	print(select_stocks_list)
+
+def load_dow_data(train):
+    """Run module"""
+
+    daily_data = []
+
+    data_1 = pd.read_csv('data/dow_jones_30_daily_price.csv')
+
+    equal_timeframe_list = list(data_1.tic.value_counts() >= 4711)
+    names = data_1.tic.value_counts().index
+
+    select_stocks_list = list(names[equal_timeframe_list])
+
+    data_2 = data_1[data_1.tic.isin(select_stocks_list)][~data_1.datadate.isin(['20010912', '20010913'])]
+    data_3 = data_2[['iid', 'datadate', 'tic', 'prccd', 'ajexdi']]
+    data_3['adjcp'] = data_3['prccd'] / data_3['ajexdi']
+
+    if train:
+        time_frame = data_3[(data_3.datadate > 20090000) & (data_3.datadate < 20160000)]
+    else:
+        time_frame = data_3[(data_3.datadate > 20160000)]
+
+    for date in np.unique(time_frame.datadate):
+        daily_data.append(time_frame[time_frame.datadate == date])
+
+    return daily_data
+
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
 
@@ -128,4 +156,4 @@ def get_sp_tickers():
 
 	return tickers
 
-get_dow()
+get_historical_prices(['DIS', 'AAPL', 'AXP'])
