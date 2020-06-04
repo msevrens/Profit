@@ -67,7 +67,7 @@ def get_dow():
 
 	# Sources
 	wsj = pd.read_csv('data/WSJ-Dow-HistoricalPrices-70-20.csv')
-	mt = pd.read_csv('data/dow-jones-industrial-average-daily.csv')
+	mt = pd.read_csv('data/MT-dow-jones-industrial-average-daily.csv')
 	yahoo = pd.read_csv('data/yahoo-DJI.csv')
 
 	# Remove Adj Close
@@ -134,13 +134,13 @@ def get_historical_prices(tickers):
 	time_range = [kaggle_data[tic].index.tolist() for tic in kaggle_data.keys()]
 	time_range = [item for sublist in time_range for item in sublist]
 	time_range = np.unique(time_range)
-	fill_range = pd.date_range(parse(time_range[0]), parse(time_range[-2])) # TODO gen list of only dates in data
 
 	daily_data = []
 
 	# Fill Dates in Reverse
-	for date in fill_range:
+	for date in time_range:
 
+		date = parse(date)
 		rows = []
 
 		for tic in tic_order:
