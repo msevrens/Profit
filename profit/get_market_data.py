@@ -17,6 +17,7 @@ import sys
 import math
 import requests
 import datetime as dt
+from datetime import date, timedelta
 from dateutil.parser import parse
 
 import numpy as np
@@ -106,33 +107,52 @@ def get_historical_prices(tickers):
 	names = baseline_data.tic.value_counts().index
 	select_stocks_list = list(names[equal_timeframe_list])
 
-	print(select_stocks_list)
+	kaggle_data = {x : pd.read_csv("data/Kaggle Stock Data/Stocks/" + x.lower() + ".us.txt") for x in select_stocks_list}
+	baseline_subset = baseline_data[baseline_data.tic.isin(select_stocks_list)]
+
+	daily_data = []
+
+	# Add Baseline Data
+	for date in np.unique(baseline_subset.datadate):
+		daily_data.append(baseline_subset[baseline_subset.datadate == date])
+
+	tic_order = daily_data[0].tic.values
+	baseline_begin = parse(str(daily_data[0].datadate.values[0]))
+	baseline_end = parse(str(daily_data[-1].datadate.values[0]))
+
+	# Add Kaggle Data
+	time_range = [kaggle_data[tic].Date.tolist() for tic in tic_order]
+	time_range = [item for sublist in time_range for item in sublist]
+	time_range = np.unique(time_range)
+
+	print(time_range[0])
+	print(time_range[-1])
 
 def load_dow_data(train):
-    """Run module"""
+	"""Run module"""
 
-    daily_data = []
+	daily_data = []
 
-    data_1 = pd.read_csv('data/dow_jones_30_daily_price.csv')
+	data_1 = pd.read_csv('data/dow_jones_30_daily_price.csv')
 
-    equal_timeframe_list = list(data_1.tic.value_counts() >= 4711)
-    names = data_1.tic.value_counts().index
+	equal_timeframe_list = list(data_1.tic.value_counts() >= 4711)
+	names = data_1.tic.value_counts().index
 
-    select_stocks_list = list(names[equal_timeframe_list])
+	select_stocks_list = list(names[equal_timeframe_list])
 
-    data_2 = data_1[data_1.tic.isin(select_stocks_list)][~data_1.datadate.isin(['20010912', '20010913'])]
-    data_3 = data_2[['iid', 'datadate', 'tic', 'prccd', 'ajexdi']]
-    data_3['adjcp'] = data_3['prccd'] / data_3['ajexdi']
+	data_2 = data_1[data_1.tic.isin(select_stocks_list)][~data_1.datadate.isin(['20010912', '20010913'])]
+	data_3 = data_2[['iid', 'datadate', 'tic', 'prccd', 'ajexdi']]
+	data_3['adjcp'] = data_3['prccd'] / data_3['ajexdi']
 
-    if train:
-        time_frame = data_3[(data_3.datadate > 20090000) & (data_3.datadate < 20160000)]
-    else:
-        time_frame = data_3[(data_3.datadate > 20160000)]
+	if train:
+		time_frame = data_3[(data_3.datadate > 20090000) & (data_3.datadate < 20160000)]
+	else:
+		time_frame = data_3[(data_3.datadate > 20160000)]
 
-    for date in np.unique(time_frame.datadate):
-        daily_data.append(time_frame[time_frame.datadate == date])
+	for date in np.unique(time_frame.datadate):
+		daily_data.append(time_frame[time_frame.datadate == date])
 
-    return daily_data
+	return daily_data
 
 def get_sp_tickers():
 	"""Scrape S&P 500 ticker symbols from wikipedia"""
