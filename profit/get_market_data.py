@@ -138,7 +138,7 @@ def get_historical_prices(tickers):
 	daily_data = []
 
 	# Fill Dates in Reverse
-	for date in time_range:
+	for date in time_range[:-1]:
 
 		date = parse(date)
 		rows = []
@@ -152,12 +152,16 @@ def get_historical_prices(tickers):
 				"datadate": date.strftime("%Y%m%d")
 			}
 
+			# No Baseline Data
 			if tic not in kaggle_data.keys():
+				base_fill = baseline_subset[baseline_subset.tic.isin([tic])][baseline_subset.datadate.isin([date.strftime("%Y%m%d")])]
+				row["adjcp"] = base_fill['adjcp'].values[0] if not base_fill.empty else None
 				rows.append(row)
 				continue
 
 			stock_data = kaggle_data[tic]
 
+			# No Kaggle Data
 			if date.strftime("%Y-%m-%d") not in stock_data.index:
 				rows.append(row)
 				continue
