@@ -107,7 +107,6 @@ def get_historical_prices(tickers):
 	names = baseline_data.tic.value_counts().index
 	select_stocks_list = list(names[equal_timeframe_list])
 
-	kaggle_data = {x : pd.read_csv("data/Kaggle Stock Data/Stocks/" + x.lower() + ".us.txt") for x in select_stocks_list}
 	baseline_subset = baseline_data[baseline_data.tic.isin(select_stocks_list)]
 	baseline_subset = baseline_subset[['iid', 'datadate', 'tic', 'prccd', 'ajexdi']]
 	baseline_subset['adjcp'] = baseline_subset['prccd'] / baseline_subset['ajexdi']
@@ -123,27 +122,56 @@ def get_historical_prices(tickers):
 	baseline_end = parse(str(daily_data[-1].datadate.values[0]))
 
 	# Add Kaggle Data
-	time_range = [kaggle_data[tic].Date.tolist() for tic in tic_order]
+	kaggle_data = {} 
+
+	for s in select_stocks_list:
+		file_name = "data/Kaggle 2020/stocks/" + s + ".csv"
+		file_available = os.path.isfile(file_name)
+		if file_available:
+			kaggle_data[s] = pd.read_csv(file_name)
+			kaggle_data[s].set_index("Date", inplace=True)
+
+	time_range = [kaggle_data[tic].index.tolist() for tic in kaggle_data.keys()]
 	time_range = [item for sublist in time_range for item in sublist]
 	time_range = np.unique(time_range)
-	fill_range = pd.date_range(parse(time_range[0]), baseline_begin)
+	fill_range = pd.date_range(parse(time_range[0]), parse(time_range[-2])) # TODO gen list of only dates in data
+
+	daily_data = []
 
 	# Fill Dates in Reverse
-	for date in fill_range[::-1]:
+	for date in fill_range:
 
-		date = date.strftime("%Y-%m-%d")
-		close_prices = []
+		rows = []
 
 		for tic in tic_order:
-			stock_data = kaggle_data[tic].set_index("Date")
-			day_data = stock_data.loc[date]
-			close_prices.append(day_data.Close)
 
-		daily_data.insert(0, close_prices)
+			row = {
+				"tic": tic, 
+				"close": None, 
+				"adjcp": None,
+				"datadate": date.strftime("%Y%m%d")
+			}
 
-		print(daily_data[0])
-		print(close_prices)
-		sys.exit()
+			if tic not in kaggle_data.keys():
+				rows.append(row)
+				continue
+
+			stock_data = kaggle_data[tic]
+
+			if date.strftime("%Y-%m-%d") not in stock_data.index:
+				rows.append(row)
+				continue
+
+			day_data = stock_data.loc[date.strftime("%Y-%m-%d")]
+			row["close"] = day_data['Close']
+			row["adjcp"] = day_data['Adj Close']
+			rows.append(row)
+
+		daily_data.append(pd.DataFrame(rows))
+
+		print(date.strftime("%Y-%m-%d"))
+	
+	print(daily_data[-1])
 
 def load_dow_data(train):
 	"""Run module"""
@@ -193,4 +221,5 @@ def get_sp_tickers():
 
 	return tickers
 
-get_historical_prices(['DIS', 'AAPL', 'AXP'])
+if __name__ == "__main__":
+	get_historical_prices(['DIS', 'AAPL', 'AXP'])
