@@ -109,6 +109,8 @@ def get_historical_prices(tickers):
 
 	kaggle_data = {x : pd.read_csv("data/Kaggle Stock Data/Stocks/" + x.lower() + ".us.txt") for x in select_stocks_list}
 	baseline_subset = baseline_data[baseline_data.tic.isin(select_stocks_list)]
+	baseline_subset = baseline_subset[['iid', 'datadate', 'tic', 'prccd', 'ajexdi']]
+	baseline_subset['adjcp'] = baseline_subset['prccd'] / baseline_subset['ajexdi']
 
 	daily_data = []
 
@@ -124,9 +126,24 @@ def get_historical_prices(tickers):
 	time_range = [kaggle_data[tic].Date.tolist() for tic in tic_order]
 	time_range = [item for sublist in time_range for item in sublist]
 	time_range = np.unique(time_range)
+	fill_range = pd.date_range(parse(time_range[0]), baseline_begin)
 
-	print(time_range[0])
-	print(time_range[-1])
+	# Fill Dates in Reverse
+	for date in fill_range[::-1]:
+
+		date = date.strftime("%Y-%m-%d")
+		close_prices = []
+
+		for tic in tic_order:
+			stock_data = kaggle_data[tic].set_index("Date")
+			day_data = stock_data.loc[date]
+			close_prices.append(day_data.Close)
+
+		daily_data.insert(0, close_prices)
+
+		print(daily_data[0])
+		print(close_prices)
+		sys.exit()
 
 def load_dow_data(train):
 	"""Run module"""
