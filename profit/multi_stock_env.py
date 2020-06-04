@@ -104,7 +104,7 @@ class MultiStockEnv(gym.Env):
             self.date_memory.append(parse(str(self.data.datadate.iloc[0])))
 
             # print("stock_shares:{}".format(self.state[29:]))
-            self.state =  [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
+            self.state = [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
             end_total_asset = self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
             # print("end_total_asset:{}".format(end_total_asset))
             
