@@ -99,7 +99,7 @@ def get_dow():
 
 	return three
 
-def get_historical_prices(tickers):
+def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	"""Construct and save historical prices of list of stock tickers"""
 
 	baseline_data = pd.read_csv('data/dow_jones_30_daily_price.csv')
@@ -133,12 +133,14 @@ def get_historical_prices(tickers):
 
 	time_range = [kaggle_data[tic].index.tolist() for tic in kaggle_data.keys()]
 	time_range = [item for sublist in time_range for item in sublist]
-	time_range = np.unique(time_range)
+	time_range = pd.DataFrame(np.unique(time_range))
 
+	# Subsample Time Range
+	time_slice = time_range[(time_range[0] > time_frame[0]) & (time_range[0] < time_frame[1])]
 	daily_data = []
 
-	# Fill Dates in Reverse
-	for date in time_range[:-1]:
+	# Fill Dates
+	for date in time_slice[0]:
 
 		date = parse(date)
 		rows = []
@@ -226,4 +228,4 @@ def get_sp_tickers():
 	return tickers
 
 if __name__ == "__main__":
-	get_historical_prices(['DIS', 'AAPL', 'AXP'])
+	get_historical_prices(tickers=['DIS', 'AAPL', 'AXP'], time_frame=("2016-01-01", "2018-09-30"))
