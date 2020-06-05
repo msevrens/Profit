@@ -44,17 +44,19 @@ class MultiStockEnv(gym.Env):
         self.daily_return = self.dow_hist['Close'].pct_change(1)[1:]
         self.daily_data = data
         self.day = day
-        
-        # Action Space: Buy or Sell Maximum 5 Shares
-        self.action_space = spaces.Box(low=-5, high=5, shape=(28,), dtype=np.int8) 
-
-        # Observation Space: [money] + [prices 1-28] * [owned shares 1-28]
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(57,))
-        
         self.data = self.daily_data[self.day]
         self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
+        self.num_stocks = len(self.data)
+        
+        # Action Space: Buy or Sell Maximum 5 Shares
+        self.action_space = spaces.Box(low=-5, high=5, shape=(self.num_stocks,), dtype=np.int8) 
+
+        # Observation Space: [money] + [prices 1-28] * [owned shares 1-28]
+        state_size = (2 * self.num_stocks) + 1
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(state_size,))
+        
         self.terminal = False
-        self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
+        self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(self.num_stocks)]
         self.reward = 0
         self.asset_memory = [10000]
         self.dow_memory = [10000]
@@ -66,26 +68,29 @@ class MultiStockEnv(gym.Env):
         self._seed()
 
     def _sell_stock(self, index, action):
-        if self.state[index+29] > 0:
-            self.state[0] += self.state[index+1] * min(abs(action), self.state[index+29])
-            self.state[index+29] -= min(abs(action), self.state[index+29])
+        i = self.num_stocks + 1
+        if self.state[index+i] > 0:
+            self.state[0] += self.state[index+1] * min(abs(action), self.state[index+i])
+            self.state[index+i] -= min(abs(action), self.state[index+i])
         else:
             pass
     
     def _buy_stock(self, index, action):
+        i = self.num_stocks + 1
         available_amount = self.state[0] // self.state[index+1]
         self.state[0] -= self.state[index+1] * min(available_amount, action)
-        self.state[index+29] += min(available_amount, action)
+        self.state[index+i] += min(available_amount, action)
         
     def step(self, actions):
 
+        i = self.num_stocks + 1
         self.terminal = self.day >= len(self.daily_data) - 1
 
         if self.terminal:
             return self.state, self.reward, self.terminal, {}
 
         else:
-            begin_total_asset = self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
+            begin_total_asset = self.state[0] + sum(np.array(self.state[1:i]) * np.array(self.state[i:]))
             argsort_actions = np.argsort(actions)
             sell_index = argsort_actions[:np.where(actions < 0)[0].shape[0]]
             buy_index = argsort_actions[::-1][:np.where(actions > 0)[0].shape[0]]
@@ -103,9 +108,9 @@ class MultiStockEnv(gym.Env):
             self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
             self.date_memory.append(parse(str(self.data.datadate.iloc[0])))
 
-            # print("stock_shares:{}".format(self.state[29:]))
-            self.state = [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[29:])
-            end_total_asset = self.state[0] + sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
+            # print("stock_shares:{}".format(self.state[28:]))
+            self.state = [self.state[0]] + self.data.adjcp.values.tolist() + list(self.state[i:])
+            end_total_asset = self.state[0] + sum(np.array(self.state[1:i]) * np.array(self.state[i:]))
             # print("end_total_asset:{}".format(end_total_asset))
             
             self.reward = end_total_asset - begin_total_asset            
@@ -147,15 +152,16 @@ class MultiStockEnv(gym.Env):
         self.date = parse(str(self.data.datadate.iloc[0])).strftime("%Y-%m-%d")
         self.date_memory = [parse(str(self.data.datadate.iloc[0]))]
 
-        self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(28)]
+        self.state = [10000] + self.data.adjcp.values.tolist() + [0 for i in range(self.num_stocks)]
         
         return self.state
     
     def render(self, mode='human', suffix="0"):
 
+        i = self.num_stocks + 1
         self.file_suffix = suffix
         cash = self.state[0]
-        stock_values = sum(np.array(self.state[1:29]) * np.array(self.state[29:]))
+        stock_values = sum(np.array(self.state[1:i]) * np.array(self.state[i:]))
         total_reward = cash + stock_values - 10000
         dow_portfolio_value = self.dow_memory[self.day]
         dow_reward = dow_portfolio_value - 10000
