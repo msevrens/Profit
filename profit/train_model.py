@@ -36,9 +36,9 @@ from profit.get_market_data import load_dow_data, get_historical_prices
 # train_data = load_dow_data(True)
 # test_data = load_dow_data(False)
 
-train_data = get_historical_prices(time_frame=("2000-01-01", "2014-12-31"))
-validation_data = get_historical_prices(time_frame=("2015-01-01", "2015-12-31"))
-test_data = get_historical_prices(time_frame=("2016-01-01", "2018-09-31"))
+train_data = get_historical_prices(time_frame=("2000-01-01", "2009-12-31"))
+validation_data = get_historical_prices(time_frame=("2010-01-01", "2014-12-31"))
+test_data = get_historical_prices(time_frame=("2015-01-01", "2020-04-02"))
 
 print("Number of days in train data: " + str(len(train_data)))
 print("Number of days in test data: " + str(len(validation_data)))
@@ -61,7 +61,7 @@ for ii in range(10):
         obs, rewards, done, info = validationEnv.step(action)
         # testEnv.render(mode="test")
     print("Validation run #" + str(ii))
-    total_reward = validationEnv.render(mode="test", suffix=ii)
+    total_reward = validationEnv.render(mode="test", suffix="_validation_" + str(ii))
     results.append(total_reward)
     obs = validationEnv.reset()
 
@@ -80,9 +80,12 @@ for ii in range(10):
         obs, rewards, done, info = testEnv.step(action)
         # testEnv.render(mode="test")
     print("Test run #" + str(ii))
-    total_reward = testEnv.render(mode="test", suffix=ii)
+    total_reward = testEnv.render(mode="test", suffix="_test_" + str(ii))
     results.append(total_reward)
     obs = testEnv.reset()
 
 print(results)
 print("\nAverage Reward: " + str(sum(results) / len(results)))
+
+# Save Final Model
+model.save("models/model")
