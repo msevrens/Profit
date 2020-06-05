@@ -134,7 +134,7 @@ class MultiStockEnv(gym.Env):
         plt.savefig('models/iteration_{}.png'.format(self.file_suffix))
         plt.close()
 
-        plt.plot(self.cash_memory,'g', linewidth=0.25)
+        plt.plot_date(self.date_memory, self.cash_memory,'g', linewidth=0.25)
         plt.savefig('models/cash.png')
         plt.close()
 
