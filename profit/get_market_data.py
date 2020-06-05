@@ -102,6 +102,8 @@ def get_dow():
 def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	"""Construct and save historical prices of list of stock tickers"""
 
+	print("Loading data from " + time_frame[0] + " to " + time_frame[1])
+
 	baseline_data = pd.read_csv('data/dow_jones_30_daily_price.csv')
 	equal_timeframe_list = list(baseline_data.tic.value_counts() >= 4711)
 	names = baseline_data.tic.value_counts().index
@@ -173,11 +175,12 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 			row["adjcp"] = day_data['Adj Close']
 			rows.append(row)
 
-		daily_data.append(pd.DataFrame(rows))
+		df = pd.DataFrame(rows)
 
-		print(date.strftime("%Y-%m-%d"))
+		if not df["adjcp"].isnull().any():
+			daily_data.append(df)
 	
-	print(daily_data[-1])
+	return daily_data
 
 def load_dow_data(train):
 	"""Run module"""
@@ -228,4 +231,4 @@ def get_sp_tickers():
 	return tickers
 
 if __name__ == "__main__":
-	get_historical_prices(tickers=['DIS', 'AAPL', 'AXP'], time_frame=("2016-01-01", "2018-09-30"))
+	get_historical_prices(tickers=['DIS', 'AAPL', 'AXP'], time_frame=("2016-01-01", "2018-10-30"))
