@@ -175,12 +175,16 @@ class MultiStockEnv(gym.Env):
         print("")
 
         # Portfolio Allocation
+        fig, ax = plt.subplots()
         cash_values = np.array(self.state[1:i]) * np.array(self.state[i:])
         allocation = self.data.tic.to_frame()
         allocation['cash_value'] = cash_values.tolist()
         allocation['percent'] = allocation['cash_value'] / (cash + stock_values)
         allocation['percent'] = allocation['percent'] * 100
-        print(allocation)
+        allocation.plot(kind='bar', x='tic', y='percent')
+        plt.title(self.date)
+        plt.savefig('models/allocation/' + str(self.day) + '_allocation.png')
+        plt.close()
         print("\n")
 
         return total_reward
