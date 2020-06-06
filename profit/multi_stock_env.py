@@ -174,6 +174,15 @@ class MultiStockEnv(gym.Env):
         print("agent_reward: {}".format('%.2f'%(total_reward)))
         print("")
 
+        # Portfolio Allocation
+        cash_values = np.array(self.state[1:i]) * np.array(self.state[i:])
+        allocation = self.data.tic.to_frame()
+        allocation['cash_value'] = cash_values.tolist()
+        allocation['percent'] = allocation['cash_value'] / (cash + stock_values)
+        allocation['percent'] = allocation['percent'] * 100
+        print(allocation)
+        print("\n")
+
         return total_reward
 
     def _seed(self, seed=None):
