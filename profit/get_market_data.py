@@ -15,6 +15,7 @@ Created on May 6, 2020
 import os
 import sys
 import math
+import json
 import requests
 import datetime as dt
 from datetime import date, timedelta
@@ -99,6 +100,28 @@ def get_dow():
 
 	return three
 
+def kaggle_stats():
+	"""Get stats about Kaggle data"""
+
+	data_count = {}
+
+	# Return Cached if Available
+	if os.path.isfile('data/kaggle_stats.json'):
+		with open('data/kaggle_stats.json') as json_file:
+			data_count = json.load(json_file)
+	else:
+		for s in os.listdir('data/Kaggle 2020/stocks/'):
+			tic = os.path.splitext(s)[0]
+			df = pd.read_csv('data/Kaggle 2020/stocks/' + s)
+			data_count[tic] = len(df.index)
+		with open('data/kaggle_stats.json', 'w') as fp:
+			json.dump(data_count, fp)
+
+	data_count = pd.DataFrame(data_count.items(), columns=['Ticker', 'Days Traded'])
+	data_count.sort_values(by=['Days Traded'], ascending=False, inplace=True)
+
+	print(data_count)
+
 def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	"""Construct and save historical prices of list of stock tickers"""
 
@@ -124,7 +147,7 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	baseline_end = parse(str(daily_data[-1].datadate.values[0]))
 
 	# Add Kaggle Data
-	kaggle_data = {} 
+	kaggle_data = {}
 
 	for s in select_stocks_list:
 		file_name = "data/Kaggle 2020/stocks/" + s + ".csv"
@@ -158,9 +181,9 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 
 			# No Baseline Data
 			if tic not in kaggle_data.keys():
-				base_fill = baseline_subset[baseline_subset.tic.isin([tic])][baseline_subset.datadate.isin([date.strftime("%Y%m%d")])]
-				row["adjcp"] = base_fill['adjcp'].values[0] if not base_fill.empty else None
-				rows.append(row)
+				# base_fill = baseline_subset[baseline_subset.tic.isin([tic])][baseline_subset.datadate.isin([date.strftime("%Y%m%d")])]
+				# row["adjcp"] = base_fill['adjcp'].values[0] if not base_fill.empty else None
+				# rows.append(row)
 				continue
 
 			stock_data = kaggle_data[tic]
@@ -231,4 +254,4 @@ def get_sp_tickers():
 	return tickers
 
 if __name__ == "__main__":
-	get_historical_prices(tickers=['DIS', 'AAPL', 'AXP'], time_frame=("2016-01-01", "2018-10-30"))
+	kaggle_stats()
