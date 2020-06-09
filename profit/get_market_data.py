@@ -133,10 +133,8 @@ def kaggle_stats():
 
 	return top_stocks, (earliest_date, latest_date)
 
-def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
-	"""Construct and save historical prices of list of stock tickers"""
-
-	print("Loading data from " + time_frame[0] + " to " + time_frame[1])
+def load_baseline_data():
+	"""Load benchmark data source"""
 
 	baseline_data = pd.read_csv('data/dow_jones_30_daily_price.csv')
 	equal_timeframe_list = list(baseline_data.tic.value_counts() >= 4711)
@@ -154,8 +152,16 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 		daily_data.append(baseline_subset[baseline_subset.datadate == date])
 
 	tic_order = daily_data[0].tic.values
-	baseline_begin = parse(str(daily_data[0].datadate.values[0]))
-	baseline_end = parse(str(daily_data[-1].datadate.values[0]))
+
+	return baseline_subset, tic_order, daily_data, select_stocks_list
+
+def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
+	"""Construct and save historical prices of list of stock tickers"""
+
+	print("Loading data from " + time_frame[0] + " to " + time_frame[1])
+
+	# Load Benchmark Data
+	baseline_subset, tic_order, daily_data, select_stocks_list = load_baseline_data()
 
 	# Add Kaggle Data
 	kaggle_data = {}
