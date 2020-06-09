@@ -161,7 +161,10 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	print("Loading data from " + time_frame[0] + " to " + time_frame[1])
 
 	# Load Benchmark Data
-	baseline_subset, tic_order, daily_data, select_stocks_list = load_baseline_data()
+	if len(tickers) == 0:
+		baseline_subset, tic_order, daily_data, select_stocks_list = load_baseline_data()
+	else:
+		daily_data, tic_order, select_stocks_list = {}, tickers, tickers 
 
 	# Add Kaggle Data
 	kaggle_data = {}
