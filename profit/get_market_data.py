@@ -120,7 +120,18 @@ def kaggle_stats():
 	data_count = pd.DataFrame(data_count.items(), columns=['Ticker', 'Days Traded'])
 	data_count.sort_values(by=['Days Traded'], ascending=False, inplace=True)
 
-	print(data_count)
+	pd.set_option("display.max_rows", 100)
+	data_count = data_count.head(100)
+	top_stocks = data_count['Ticker']
+	newest_ticker = data_count.iloc[99]['Ticker']
+	newest_stock = pd.read_csv('data/Kaggle 2020/stocks/' + newest_ticker + ".csv")
+
+	earliest_date = newest_stock['Date'].min()
+	latest_date = newest_stock['Date'].max()
+
+	print(top_stocks)
+
+	return top_stocks, (earliest_date, latest_date)
 
 def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	"""Construct and save historical prices of list of stock tickers"""
