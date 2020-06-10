@@ -46,8 +46,7 @@ def test_model(model_file):
 
     # Load Model if Necessary
     if type(model_file) == str:
-        model = PPO2(MlpPolicy, validationEnv, verbose=1)
-        model.load(model_file, env=validationEnv)
+        model = PPO2.load(model_file)
     else:
         model = model_file
 
