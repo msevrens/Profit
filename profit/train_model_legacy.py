@@ -50,27 +50,9 @@ model = PPO2(MlpPolicy, trainEnv, verbose=1)
 model.learn(total_timesteps=25000)
 obs = trainEnv.reset()
 
-# Validate
-validationEnv = DummyVecEnv([lambda: MultiStockEnv(validation_data, train=False)])
-
-results = []
-
-for ii in range(10):
-    for i in range(len(validation_data) - 1):
-        # print("Step: " + str(i))
-        action, _states = model.predict(obs)
-        obs, rewards, done, info = validationEnv.step(action)
-        # testEnv.render(mode="test")
-    print("Validation run #" + str(ii))
-    total_reward = validationEnv.render(mode="test", suffix="_validation_" + str(ii))
-    results.append(total_reward)
-    obs = validationEnv.reset()
-
-print(results)
-print("\nAverage Reward: " + str(sum(results) / len(results)))
-
 # Test
 testEnv = DummyVecEnv([lambda: MultiStockEnv(test_data, train=False)])
+obs = testEnv.reset()
 
 results = []
 
@@ -84,6 +66,26 @@ for ii in range(10):
     total_reward = testEnv.render(mode="test", suffix="_test_" + str(ii))
     results.append(total_reward)
     obs = testEnv.reset()
+
+print(results)
+print("\nAverage Reward: " + str(sum(results) / len(results)))
+
+# Validate
+validationEnv = DummyVecEnv([lambda: MultiStockEnv(validation_data, train=False)])
+obs = validationEnv.reset()
+
+results = []
+
+for ii in range(10):
+    for i in range(len(validation_data) - 1):
+        # print("Step: " + str(i))
+        action, _states = model.predict(obs)
+        obs, rewards, done, info = validationEnv.step(action)
+        # testEnv.render(mode="test")
+    print("Validation run #" + str(ii))
+    total_reward = validationEnv.render(mode="test", suffix="_validation_" + str(ii))
+    results.append(total_reward)
+    obs = validationEnv.reset()
 
 print(results)
 print("\nAverage Reward: " + str(sum(results) / len(results)))

@@ -158,7 +158,7 @@ def load_baseline_data():
 def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 	"""Construct and save historical prices of list of stock tickers"""
 
-	print("Loading data from " + time_frame[0] + " to " + time_frame[1])
+	print("\nLoading data from " + time_frame[0] + " to " + time_frame[1])
 
 	# Load Benchmark Data
 	if len(tickers) == 0:
@@ -201,9 +201,9 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 
 			# No Baseline Data
 			if tic not in kaggle_data.keys():
-				# base_fill = baseline_subset[baseline_subset.tic.isin([tic])][baseline_subset.datadate.isin([date.strftime("%Y%m%d")])]
-				# row["adjcp"] = base_fill['adjcp'].values[0] if not base_fill.empty else None
-				# rows.append(row)
+				base_fill = baseline_subset[baseline_subset.tic.isin([tic])][baseline_subset.datadate.isin([date.strftime("%Y%m%d")])]
+				row["adjcp"] = base_fill['adjcp'].values[0] if not base_fill.empty else 1
+				rows.append(row)
 				continue
 
 			stock_data = kaggle_data[tic]

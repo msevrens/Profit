@@ -68,7 +68,7 @@ def test_model(model_file):
         obs = validationEnv.reset()
 
     print(results)
-    print("\nAverage Reward: " + str(sum(results) / len(results)))
+    print("\nAverage Validation Reward: " + str(sum(results) / len(results)))
     results = []
     model.set_env(testEnv)
     obs = testEnv.reset()
@@ -86,15 +86,13 @@ def test_model(model_file):
         obs = testEnv.reset()
 
     print(results)
-    print("\nAverage Reward: " + str(sum(results) / len(results)))
-
-    return None
+    print("\nAverage Test Reward: " + str(sum(results) / len(results)))
 
 def train_model():
     """Train model"""
 
     # Load Data and Environment
-    train_data = get_historical_prices(time_frame=("2009-01-01", "2015-12-31"))
+    train_data = get_historical_prices(time_frame=("2000-01-01", "2015-12-31"))
     trainEnv = DummyVecEnv([lambda: MultiStockEnv(train_data)])
 
     print("Number of days in train data: " + str(len(train_data)) + "\n")
@@ -111,8 +109,6 @@ def train_model():
 
     # Save Final Model
     model.save("models/model")
-
-    return None
 
 def main():
     """Run module from command line"""
