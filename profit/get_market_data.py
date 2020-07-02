@@ -122,7 +122,7 @@ def kaggle_stats():
 
 	pd.set_option("display.max_rows", 100)
 	data_count = data_count.head(100)
-	top_stocks = data_count['Ticker']
+	top_stocks = data_count['Ticker'].tolist()
 	newest_ticker = data_count.iloc[99]['Ticker']
 	newest_stock = pd.read_csv('data/Kaggle 2020/stocks/' + newest_ticker + ".csv")
 
@@ -130,6 +130,7 @@ def kaggle_stats():
 	latest_date = newest_stock['Date'].max()
 
 	print(top_stocks)
+	print(earliest_date, latest_date)
 
 	return top_stocks, (earliest_date, latest_date)
 
