@@ -16,6 +16,19 @@ from os.path import isfile, join
 import yfinance as yf
 import pandas as pd
 
+def make_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+def move_symbols(symbols, dest):
+    for s in symbols:
+        filename = '{}.csv'.format(s)
+        shutil.move(join('data/Kaggle 2020', filename), join(dest, filename))
+
+make_directory('data/Kaggle 2020')
+make_directory('data/Kaggle 2020/etfs')
+make_directory('data/Kaggle 2020/stocks')
+
 offset = 0
 limit = None
 period = 'max'
@@ -40,7 +53,7 @@ with open(os.devnull, 'w') as devnull:
                 continue
         
             is_valid[i] = True
-            data.to_csv('data/hist/{}.csv'.format(s))
+            data.to_csv('data/Kaggle 2020/{}.csv'.format(s))
 
 print('Total number of valid symbols downloaded = {}'.format(sum(is_valid)))
 
@@ -49,11 +62,6 @@ valid_data.to_csv('symbols_valid_meta.csv', index=False)
 
 etfs = valid_data[valid_data['ETF'] == 'Y']['NASDAQ Symbol'].tolist()
 stocks = valid_data[valid_data['ETF'] == 'N']['NASDAQ Symbol'].tolist()
-
-def move_symbols(symbols, dest):
-    for s in symbols:
-        filename = '{}.csv'.format(s)
-        shutil.move(join('data/hist', filename), join(dest, filename))
         
-move_symbols(etfs, "data/hist/etfs")
-move_symbols(stocks, "data/hist/stocks")
+move_symbols(etfs, "data/Kaggle 2020/etfs")
+move_symbols(stocks, "data/Kaggle 2020/stocks")
