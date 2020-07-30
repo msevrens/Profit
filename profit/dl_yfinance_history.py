@@ -71,8 +71,8 @@ def update_dow():
     data = yf.download("^DJI", period="max")
 
     # Return Cached if Available
-    if os.path.isfile("data/aggregated_dow_1914-2020.csv"):
-        aggregated = pd.read_csv("data/aggregated_dow_1914-2020.csv")
+    if os.path.isfile("data/aggregated_dow.csv"):
+        aggregated = pd.read_csv("data/aggregated_dow.csv")
     
     most_recent = aggregated['Date'].max()
     new_data = data[data.index > most_recent]

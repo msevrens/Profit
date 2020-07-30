@@ -39,7 +39,7 @@ class MultiStockEnv(gym.Env):
     def __init__(self, data, day=0, train=True):
 
         self.mode = train
-        self.dow_hist = pd.read_csv('data/aggregated_dow_1914-2020.csv')
+        self.dow_hist = pd.read_csv('data/aggregated_dow.csv')
         self.dow_hist.set_index('Date', inplace=True)
         self.daily_return = self.dow_hist['Close'].pct_change(1)[1:]
         self.daily_data = data
