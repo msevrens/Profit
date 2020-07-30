@@ -63,28 +63,26 @@ def get_dow():
 	"""Merge multiple historical Dow Jones sources"""
 
 	# Return Cached if Available
-	if os.path.isfile("data/aggregated_dow_1914-2020.csv"):
-		return pd.read_csv("data/aggregated_dow_1914-2020.csv")
+	if os.path.isfile("data/aggregated_dow.csv"):
+		return pd.read_csv("data/aggregated_dow.csv")
 
 	# Sources
 	wsj = pd.read_csv('data/WSJ-Dow-HistoricalPrices-70-20.csv')
 	mt = pd.read_csv('data/MT-dow-jones-industrial-average-daily.csv')
-	yahoo = pd.read_csv('data/yahoo-DJI.csv')
+	yahoo = yf.download("^DJI", period="max")
 
 	# Remove Adj Close
 	yahoo.drop('Adj Close', axis=1, inplace=True)
 
-	# yahoo = yf.Ticker("DJI")
-
 	# Match Date Formats and Merge
-	wsj['Date'] = wsj['Date'].apply(lambda x: parse(x).strftime("%Y-%m-%d"))
+	wsj['Date'] = pd.to_datetime(wsj['Date'], format="%m/%d/%y")
+	mt['Date'] = pd.to_datetime(mt['Date'], format="%Y-%m-%d")
 	merged = pd.merge(mt, wsj, on="Date", how="outer")
-	three = pd.merge(merged, yahoo, on="Date", how="outer")
+	merged.set_index('Date', inplace=True)
+	three = pd.merge(merged, yahoo, left_index=True, right_index=True, how="outer")
 	three.rename({'Close': 'Yahoo Close', 'Closing Value': 'MT Close', ' Close': 'WSJ Close'}, axis=1, inplace=True)
 
-	# Select Close Price from Sources
-	match_map = (three['MT Close'] == three['WSJ Close']) & (three['MT Close'] == round(three['Yahoo Close'], 2))
-
+	# Merge Columns
 	def merge_close(x):
 		if not math.isnan(x['Yahoo Close']):
 			return x['Yahoo Close']
@@ -94,9 +92,14 @@ def get_dow():
 			return x['MT Close']
 
 	three['Close'] = three.apply(merge_close, axis=1)
+	three['Low'] = three.apply(lambda x: x['Low'] if not math.isnan(x['Low']) else x[' Low'], axis=1)
+	three['High'] = three.apply(lambda x: x['High'] if not math.isnan(x['High']) else x[' High'], axis=1)
+	three['Open'] = three.apply(lambda x: x['Open'] if not math.isnan(x['Open']) else x[' Open'], axis=1)
+	three.drop([' High', ' Open', ' Low'], axis=1, inplace=True)
 
 	# Save
-	three.to_csv("data/aggregated_dow_1914-2020.csv")
+	three.sort_index(inplace=True)
+	three.to_csv("data/aggregated_dow.csv")
 
 	return three
 
