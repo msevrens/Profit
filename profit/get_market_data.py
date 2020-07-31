@@ -214,6 +214,7 @@ def get_historical_prices(tickers=[], time_frame=("2009-01-01", "2016-01-01")):
 
 			# No Kaggle Data
 			if date.strftime("%Y-%m-%d") not in stock_data.index:
+				# print(tic + " not in kaggle data on " + date.strftime("%Y-%m-%d"))
 				fill_value = daily_data[-1][daily_data[-1].tic == tic]['adjcp'].values[0]
 				row["adjcp"] = fill_value # last available closing price
 				rows.append(row)
