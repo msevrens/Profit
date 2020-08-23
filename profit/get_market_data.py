@@ -59,6 +59,18 @@ def plot_stock(ticker_symbol, rolling=1):
 
 	plt.show()
 
+def get_sp():
+	"""Fetch S&P data from Yahoo Finance"""
+
+	# Return Cached if Available
+	if os.path.isfile("data/sp_historical.csv"):
+		return pd.read_csv("data/sp_historical.csv")
+
+	yahoo = yf.download("^GSPC", period="max")
+	yahoo.to_csv("data/sp_historical.csv")
+
+	return yahoo
+
 def get_dow():
 	"""Merge multiple historical Dow Jones sources"""
 

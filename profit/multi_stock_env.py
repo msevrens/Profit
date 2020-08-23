@@ -29,7 +29,7 @@ from gym import spaces
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
 
-from profit.get_market_data import get_dow
+from profit.get_market_data import get_dow, get_sp
 
 class MultiStockEnv(gym.Env):
     """A multi-stock trading environment for OpenAI gym"""
@@ -39,7 +39,7 @@ class MultiStockEnv(gym.Env):
     def __init__(self, data, day=0, train=True):
 
         self.mode = train
-        self.dow_hist = pd.read_csv('data/aggregated_dow.csv')
+        self.dow_hist = get_dow()
         self.dow_hist.set_index('Date', inplace=True)
         self.daily_return = self.dow_hist['Close'].pct_change(1)[1:]
         self.daily_data = data
